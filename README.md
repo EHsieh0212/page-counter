@@ -1,6 +1,6 @@
 # page-views-worker
 
-A Cloudflare Worker that tracks page view counts for theoutsidelaine.com.  
+A Cloudflare Worker that tracks page view counts for a website.  
 每次文章頁面載入時，透過此 Worker 將點擊數 +1 並儲存至 Cloudflare KV。
 
 ---
