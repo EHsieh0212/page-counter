@@ -13,9 +13,30 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // GET: return count for a slug without incrementing (for list pages)
+    // GET: return count(s) for slug(s) without incrementing (for list/article pages)
     if (request.method === "GET") {
-      const slug = new URL(request.url).searchParams.get("slug");
+      const params = new URL(request.url).searchParams;
+
+      // Batch mode: ?slugs=slug1,slug2,...
+      const slugsParam = params.get("slugs");
+      if (slugsParam) {
+        const slugs = slugsParam.split(",");
+        if (slugs.length === 0 || slugs.some((s) => !VALID_SLUG.test(s))) {
+          return new Response("Missing or invalid slugs", { status: 400 });
+        }
+        const counts = await Promise.all(
+          slugs.map(async (s) => {
+            const val = await env.PAGE_VIEWS.get(s);
+            return [s, parseInt(val || "0")];
+          })
+        );
+        return new Response(JSON.stringify(Object.fromEntries(counts)), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Single mode: ?slug=slug1
+      const slug = params.get("slug");
       if (!slug || typeof slug !== "string" || !VALID_SLUG.test(slug)) {
         return new Response("Missing or invalid slug", { status: 400 });
       }
