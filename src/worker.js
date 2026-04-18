@@ -1,4 +1,5 @@
 const ALLOWED_ORIGIN = "https://theoutsidelaine.com";
+const VALID_SLUG = /^\/p\/[a-z0-9-]+\/$/;
 
 export default {
   async fetch(request, env) {
@@ -15,7 +16,7 @@ export default {
     // GET: return count for a slug without incrementing (for list pages)
     if (request.method === "GET") {
       const slug = new URL(request.url).searchParams.get("slug");
-      if (!slug || typeof slug !== "string") {
+      if (!slug || typeof slug !== "string" || !VALID_SLUG.test(slug)) {
         return new Response("Missing or invalid slug", { status: 400 });
       }
       const current = await env.PAGE_VIEWS.get(slug);
@@ -38,7 +39,7 @@ export default {
     }
 
     const { slug } = body;
-    if (!slug || typeof slug !== "string") {
+    if (!slug || typeof slug !== "string" || !VALID_SLUG.test(slug)) {
       return new Response("Missing or invalid slug", { status: 400 });
     }
 
